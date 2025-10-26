@@ -33,9 +33,9 @@ jobs:
           distribution: 'temurin'
           cache: gradle    # ✅ built-in Gradle cache
 
-      # 4️⃣ Build the app (Gradle)
+      # 4️⃣ Build the app (Gradle) – removed clean for incremental build
       - name: Build with Gradle
-        run: ./gradlew clean build
+        run: ./gradlew build
 
       # 5️⃣ Set up Docker Buildx
       - name: Set up Docker Buildx
@@ -68,7 +68,11 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-      # 9️⃣ Cache Trivy DB to avoid downloading every time
+      # 9️⃣ Ensure Trivy cache dir exists
+      - name: Ensure Trivy cache dir
+        run: mkdir -p ~/.cache/trivy
+
+      # 🔟 Cache Trivy DB to avoid downloading every time
       - name: Cache Trivy DB
         uses: actions/cache@v4
         with:
@@ -77,7 +81,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-trivy-
 
-      # 🔟 Scan image with Trivy
+      # 1️⃣1️⃣ Scan image with Trivy
       - name: Trivy Image Scan
         uses: aquasecurity/trivy-action@0.24.0
         with:
