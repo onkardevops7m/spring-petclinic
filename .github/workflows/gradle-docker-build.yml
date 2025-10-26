@@ -18,6 +18,8 @@ jobs:
       # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # fetch full history
 
       # 2️⃣ Gitleaks scan (fail fast if secrets found)
       - name: Secret Scan with Gitleaks
