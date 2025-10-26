@@ -1,0 +1,49 @@
+name: Build Java App and Docker Image
+
+on:
+  push:
+    branches: [ github-action-testing ]
+  pull_request:
+    branches: [ github-action-testing ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java: [ '25' ]  # You can switch to '25' if your project needs it
+
+    steps:
+      # 1️⃣ Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Set up Java
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'   # recommended over 'adopt'
+          cache: gradle
+
+      # 3️⃣ Build Java app with Gradle
+      - name: Build with Gradle
+        run: ./gradlew clean build
+
+      # 4️⃣ Set up Docker Buildx (modern docker builder)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 5️⃣ Build Docker image (no push)
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false           # ❌ don't push anywhere
+          tags: myapp:latest    # local tag only
+          load: true            # ✅ load image into local Docker (so you can test it)
+
+      # 6️⃣ Optional: Verify image was built
+      - name: Verify Docker Image
+        run: docker images | grep myapp
